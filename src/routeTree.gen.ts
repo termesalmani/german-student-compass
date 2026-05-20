@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppJobsRouteImport } from './routes/_app/jobs'
+import { Route as AppEmailHelperRouteImport } from './routes/_app/email-helper'
+import { Route as AppBureaucracyRouteImport } from './routes/_app/bureaucracy'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -21,30 +25,67 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJobsRoute = AppJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmailHelperRoute = AppEmailHelperRouteImport.update({
+  id: '/email-helper',
+  path: '/email-helper',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBureaucracyRoute = AppBureaucracyRouteImport.update({
+  id: '/bureaucracy',
+  path: '/bureaucracy',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppRoute
+  '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
+  '/bureaucracy': typeof AppBureaucracyRoute
+  '/email-helper': typeof AppEmailHelperRoute
+  '/jobs': typeof AppJobsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppRoute
   '/auth': typeof AuthRoute
+  '/bureaucracy': typeof AppBureaucracyRoute
+  '/email-helper': typeof AppEmailHelperRoute
+  '/jobs': typeof AppJobsRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRoute
+  '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_app/bureaucracy': typeof AppBureaucracyRoute
+  '/_app/email-helper': typeof AppEmailHelperRoute
+  '/_app/jobs': typeof AppJobsRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths: '/' | '/auth' | '/bureaucracy' | '/email-helper' | '/jobs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth'
-  id: '__root__' | '/_app' | '/auth'
+  to: '/auth' | '/bureaucracy' | '/email-helper' | '/jobs' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/auth'
+    | '/_app/bureaucracy'
+    | '/_app/email-helper'
+    | '/_app/jobs'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
 }
 
@@ -64,11 +105,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/jobs': {
+      id: '/_app/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof AppJobsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/email-helper': {
+      id: '/_app/email-helper'
+      path: '/email-helper'
+      fullPath: '/email-helper'
+      preLoaderRoute: typeof AppEmailHelperRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/bureaucracy': {
+      id: '/_app/bureaucracy'
+      path: '/bureaucracy'
+      fullPath: '/bureaucracy'
+      preLoaderRoute: typeof AppBureaucracyRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppBureaucracyRoute: typeof AppBureaucracyRoute
+  AppEmailHelperRoute: typeof AppEmailHelperRoute
+  AppJobsRoute: typeof AppJobsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBureaucracyRoute: AppBureaucracyRoute,
+  AppEmailHelperRoute: AppEmailHelperRoute,
+  AppJobsRoute: AppJobsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
