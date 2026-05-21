@@ -13,8 +13,10 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppJobsRouteImport } from './routes/_app/jobs'
+import { Route as AppHealthRouteImport } from './routes/_app/health'
 import { Route as AppEmailHelperRouteImport } from './routes/_app/email-helper'
 import { Route as AppBureaucracyRouteImport } from './routes/_app/bureaucracy'
+import { Route as AppAssistantRouteImport } from './routes/_app/assistant'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -35,6 +37,11 @@ const AppJobsRoute = AppJobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHealthRoute = AppHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEmailHelperRoute = AppEmailHelperRouteImport.update({
   id: '/email-helper',
   path: '/email-helper',
@@ -45,18 +52,27 @@ const AppBureaucracyRoute = AppBureaucracyRouteImport.update({
   path: '/bureaucracy',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
+  '/assistant': typeof AppAssistantRoute
   '/bureaucracy': typeof AppBureaucracyRoute
   '/email-helper': typeof AppEmailHelperRoute
+  '/health': typeof AppHealthRoute
   '/jobs': typeof AppJobsRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/assistant': typeof AppAssistantRoute
   '/bureaucracy': typeof AppBureaucracyRoute
   '/email-helper': typeof AppEmailHelperRoute
+  '/health': typeof AppHealthRoute
   '/jobs': typeof AppJobsRoute
   '/': typeof AppIndexRoute
 }
@@ -64,22 +80,40 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_app/assistant': typeof AppAssistantRoute
   '/_app/bureaucracy': typeof AppBureaucracyRoute
   '/_app/email-helper': typeof AppEmailHelperRoute
+  '/_app/health': typeof AppHealthRoute
   '/_app/jobs': typeof AppJobsRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/bureaucracy' | '/email-helper' | '/jobs'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/assistant'
+    | '/bureaucracy'
+    | '/email-helper'
+    | '/health'
+    | '/jobs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/bureaucracy' | '/email-helper' | '/jobs' | '/'
+  to:
+    | '/auth'
+    | '/assistant'
+    | '/bureaucracy'
+    | '/email-helper'
+    | '/health'
+    | '/jobs'
+    | '/'
   id:
     | '__root__'
     | '/_app'
     | '/auth'
+    | '/_app/assistant'
     | '/_app/bureaucracy'
     | '/_app/email-helper'
+    | '/_app/health'
     | '/_app/jobs'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -119,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/health': {
+      id: '/_app/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof AppHealthRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/email-helper': {
       id: '/_app/email-helper'
       path: '/email-helper'
@@ -133,19 +174,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBureaucracyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAssistantRoute: typeof AppAssistantRoute
   AppBureaucracyRoute: typeof AppBureaucracyRoute
   AppEmailHelperRoute: typeof AppEmailHelperRoute
+  AppHealthRoute: typeof AppHealthRoute
   AppJobsRoute: typeof AppJobsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAssistantRoute: AppAssistantRoute,
   AppBureaucracyRoute: AppBureaucracyRoute,
   AppEmailHelperRoute: AppEmailHelperRoute,
+  AppHealthRoute: AppHealthRoute,
   AppJobsRoute: AppJobsRoute,
   AppIndexRoute: AppIndexRoute,
 }

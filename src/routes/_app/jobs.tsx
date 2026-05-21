@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ type Job = {
   status: string;
   notes: string | null;
   job_link: string | null;
+  rejection_reason: string | null;
 };
 
 const STATUSES = ["applied", "interview", "offer", "rejected"];
@@ -31,6 +32,7 @@ const STATUSES = ["applied", "interview", "offer", "rejected"];
 function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [open, setOpen] = useState(false);
+  const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     company: "",
     job_title: "",
@@ -45,7 +47,11 @@ function JobsPage() {
       .from("job_applications")
       .select("*")
       .order("application_date", { ascending: false });
-    setJobs((data as Job[]) ?? []);
+    const list = (data as Job[]) ?? [];
+    setJobs(list);
+    setReasonDrafts(
+      Object.fromEntries(list.map((j) => [j.id, j.rejection_reason ?? ""])),
+    );
   };
 
   useEffect(() => { load(); }, []);
@@ -79,6 +85,17 @@ function JobsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     await supabase.from("job_applications").update({ status }).eq("id", id);
+    load();
+  };
+
+  const saveReason = async (id: string) => {
+    const reason = reasonDrafts[id] ?? "";
+    const { error } = await supabase
+      .from("job_applications")
+      .update({ rejection_reason: reason || null })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Rejection note saved");
     load();
   };
 
@@ -159,7 +176,8 @@ function JobsPage() {
                 <TableRow><TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">No applications yet.</TableCell></TableRow>
               )}
               {jobs.map((j) => (
-                <TableRow key={j.id}>
+                <Fragment key={j.id}>
+                <TableRow>
                   <TableCell className="font-medium">{j.company}</TableCell>
                   <TableCell>
                     <div>{j.job_title}</div>
@@ -188,6 +206,31 @@ function JobsPage() {
                     <Button variant="ghost" size="icon" onClick={() => del(j.id)}><Trash2 className="h-4 w-4" /></Button>
                   </TableCell>
                 </TableRow>
+                {j.status === "rejected" && (
+                  <TableRow className="bg-destructive/5">
+                    <TableCell colSpan={6}>
+                      <div className="space-y-2 p-1">
+                        <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Rejection reason / feedback
+                        </Label>
+                        <Textarea
+                          rows={2}
+                          placeholder="What feedback or reason did you receive? Anything to remember for next time?"
+                          value={reasonDrafts[j.id] ?? ""}
+                          onChange={(e) =>
+                            setReasonDrafts({ ...reasonDrafts, [j.id]: e.target.value })
+                          }
+                        />
+                        <div className="flex justify-end">
+                          <Button size="sm" variant="outline" onClick={() => saveReason(j.id)}>
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                </Fragment>
               ))}
             </TableBody>
           </Table>
