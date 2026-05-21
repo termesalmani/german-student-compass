@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppJobsRouteImport } from './routes/_app/jobs'
+import { Route as AppHealthRouteImport } from './routes/_app/health'
 import { Route as AppEmailHelperRouteImport } from './routes/_app/email-helper'
 import { Route as AppBureaucracyRouteImport } from './routes/_app/bureaucracy'
 import { Route as AppAssistantRouteImport } from './routes/_app/assistant'
@@ -34,6 +35,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppJobsRoute = AppJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHealthRoute = AppHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmailHelperRoute = AppEmailHelperRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AppAssistantRoute
   '/bureaucracy': typeof AppBureaucracyRoute
   '/email-helper': typeof AppEmailHelperRoute
+  '/health': typeof AppHealthRoute
   '/jobs': typeof AppJobsRoute
 }
 export interface FileRoutesByTo {
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AppAssistantRoute
   '/bureaucracy': typeof AppBureaucracyRoute
   '/email-helper': typeof AppEmailHelperRoute
+  '/health': typeof AppHealthRoute
   '/jobs': typeof AppJobsRoute
   '/': typeof AppIndexRoute
 }
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   '/_app/assistant': typeof AppAssistantRoute
   '/_app/bureaucracy': typeof AppBureaucracyRoute
   '/_app/email-helper': typeof AppEmailHelperRoute
+  '/_app/health': typeof AppHealthRoute
   '/_app/jobs': typeof AppJobsRoute
   '/_app/': typeof AppIndexRoute
 }
@@ -86,9 +95,17 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/bureaucracy'
     | '/email-helper'
+    | '/health'
     | '/jobs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/assistant' | '/bureaucracy' | '/email-helper' | '/jobs' | '/'
+  to:
+    | '/auth'
+    | '/assistant'
+    | '/bureaucracy'
+    | '/email-helper'
+    | '/health'
+    | '/jobs'
+    | '/'
   id:
     | '__root__'
     | '/_app'
@@ -96,6 +113,7 @@ export interface FileRouteTypes {
     | '/_app/assistant'
     | '/_app/bureaucracy'
     | '/_app/email-helper'
+    | '/_app/health'
     | '/_app/jobs'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -135,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/health': {
+      id: '/_app/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof AppHealthRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/email-helper': {
       id: '/_app/email-helper'
       path: '/email-helper'
@@ -163,6 +188,7 @@ interface AppRouteChildren {
   AppAssistantRoute: typeof AppAssistantRoute
   AppBureaucracyRoute: typeof AppBureaucracyRoute
   AppEmailHelperRoute: typeof AppEmailHelperRoute
+  AppHealthRoute: typeof AppHealthRoute
   AppJobsRoute: typeof AppJobsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -171,6 +197,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssistantRoute: AppAssistantRoute,
   AppBureaucracyRoute: AppBureaucracyRoute,
   AppEmailHelperRoute: AppEmailHelperRoute,
+  AppHealthRoute: AppHealthRoute,
   AppJobsRoute: AppJobsRoute,
   AppIndexRoute: AppIndexRoute,
 }
