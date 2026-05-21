@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { LayoutDashboard, FileText, Briefcase, Mail, LogOut, GraduationCap } from "lucide-react";
+import { LayoutDashboard, FileText, Briefcase, Mail, LogOut, Compass } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -31,11 +31,11 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="h-4 w-4" />
+            <Compass className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Survival OS</span>
-            <span className="text-xs text-muted-foreground">Students in Germany</span>
+            <span className="text-sm font-semibold">German Student Compass</span>
+            <span className="text-xs text-muted-foreground">Your guide to studying in Germany</span>
           </div>
         </div>
       </SidebarHeader>
