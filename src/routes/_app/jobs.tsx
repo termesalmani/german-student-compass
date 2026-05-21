@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -176,8 +176,8 @@ function JobsPage() {
                 <TableRow><TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">No applications yet.</TableCell></TableRow>
               )}
               {jobs.map((j) => (
-                <>
-                <TableRow key={j.id}>
+                <Fragment key={j.id}>
+                <TableRow>
                   <TableCell className="font-medium">{j.company}</TableCell>
                   <TableCell>
                     <div>{j.job_title}</div>
@@ -207,7 +207,7 @@ function JobsPage() {
                   </TableCell>
                 </TableRow>
                 {j.status === "rejected" && (
-                  <TableRow key={j.id + "-reason"} className="bg-destructive/5">
+                  <TableRow className="bg-destructive/5">
                     <TableCell colSpan={6}>
                       <div className="space-y-2 p-1">
                         <Label className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -230,7 +230,7 @@ function JobsPage() {
                     </TableCell>
                   </TableRow>
                 )}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
