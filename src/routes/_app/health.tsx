@@ -77,7 +77,7 @@ function HealthPage() {
           notes: form.notes || null,
         };
     if (!preset && !form.title.trim()) return toast.error("Title is required");
-    const { error } = await supabase.from("health_reminders").insert(payload);
+    const { error } = await supabase.from("health_reminders").insert(payload as any);
     if (error) return toast.error(error.message);
     toast.success("Reminder added");
     if (!preset) {
