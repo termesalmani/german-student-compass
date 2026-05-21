@@ -110,12 +110,15 @@ function Dashboard() {
   ).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Your German student life at a glance.</p>
-        </div>
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 via-background to-background p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-widest text-primary">Dashboard</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">Welcome back</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Your German student life at a glance.</p>
+          </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="mr-2 h-4 w-4" /> New task</Button>
@@ -164,6 +167,7 @@ function Dashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -256,15 +260,15 @@ function StatCard({
   accent?: "destructive";
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-center justify-between p-4">
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="flex items-center justify-between p-5">
         <div>
-          <div className="text-xs text-muted-foreground">{label}</div>
-          <div className={`mt-1 text-2xl font-semibold ${accent === "destructive" ? "text-destructive" : ""}`}>
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+          <div className={`mt-2 text-3xl font-semibold tracking-tight ${accent === "destructive" ? "text-destructive" : ""}`}>
             {value}
           </div>
         </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accent === "destructive" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
           {icon}
         </div>
       </CardContent>
