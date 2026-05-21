@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      health_reminders: {
+        Row: {
+          category: string
+          completed: boolean
+          created_at: string
+          due_date: string | null
+          frequency: string | null
+          id: string
+          notes: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          completed?: boolean
+          created_at?: string
+          due_date?: string | null
+          frequency?: string | null
+          id?: string
+          notes?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed?: boolean
+          created_at?: string
+          due_date?: string | null
+          frequency?: string | null
+          id?: string
+          notes?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           application_date: string
@@ -59,6 +98,7 @@ export type Database = {
           job_link: string | null
           job_title: string
           notes: string | null
+          rejection_reason: string | null
           status: string
           updated_at: string
           user_id: string
@@ -71,6 +111,7 @@ export type Database = {
           job_link?: string | null
           job_title: string
           notes?: string | null
+          rejection_reason?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -83,6 +124,7 @@ export type Database = {
           job_link?: string | null
           job_title?: string
           notes?: string | null
+          rejection_reason?: string | null
           status?: string
           updated_at?: string
           user_id?: string
