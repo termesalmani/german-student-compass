@@ -29,7 +29,7 @@ function AppLayout() {
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
           <SidebarTrigger />
-          <div className="text-sm font-medium">International Student Survival OS</div>
+          <div className="text-sm font-medium">German Student Compass</div>
         </header>
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
