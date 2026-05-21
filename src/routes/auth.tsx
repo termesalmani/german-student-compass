@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { GraduationCap } from "lucide-react";
+import { Compass } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
 
@@ -70,7 +70,7 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="h-5 w-5" />
+            <Compass className="h-5 w-5" />
           </div>
           <div>
             <h1 className="text-xl font-semibold">German Student Compass</h1>
