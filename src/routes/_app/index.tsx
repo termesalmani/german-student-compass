@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, CalendarDays, ListTodo, Briefcase, FileText } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus, CalendarDays, ListTodo, Briefcase, FileText, Trash2, GripVertical, Bell, BellRing } from "lucide-react";
 import { format, isPast, parseISO, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -21,6 +26,16 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor,
+  useSensor, useSensors, DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove, SortableContext, sortableKeyboardCoordinates,
+  useSortable, verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_app/")({ component: Dashboard });
 
@@ -32,13 +47,27 @@ type Task = {
   priority: string;
   completed: boolean;
   category: string;
+  sort_order: number;
+};
+
+type Reminder = {
+  id: string;
+  title: string;
+  note: string | null;
+  reminder_at: string | null;
+  due_date: string | null;
+  completed: boolean;
+  source_type: string;
 };
 
 function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [bureaucracyCount, setBureaucracyCount] = useState(0);
   const [jobsByStatus, setJobsByStatus] = useState<Record<string, number>>({});
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [open, setOpen] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const { perm, setPerm } = usePermission();
 
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -46,32 +75,38 @@ function Dashboard() {
   const [category, setCategory] = useState("general");
 
   const load = async () => {
-    const [{ data: t }, { count: bCount }, { data: jobs }] = await Promise.all([
-      supabase.from("tasks").select("*").order("due_date", { ascending: true, nullsFirst: false }),
+    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }] = await Promise.all([
+      supabase.from("tasks").select("*").order("sort_order", { ascending: true }).order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("bureaucracy_items").select("*", { count: "exact", head: true }),
       supabase.from("job_applications").select("status"),
+      supabase.from("reminders").select("*").eq("completed", false).order("reminder_at", { ascending: true, nullsFirst: false }),
     ]);
     setTasks((t as Task[]) ?? []);
     setBureaucracyCount(bCount ?? 0);
     const counts: Record<string, number> = {};
     (jobs ?? []).forEach((j: any) => (counts[j.status] = (counts[j.status] ?? 0) + 1));
     setJobsByStatus(counts);
+    setReminders((rem as Reminder[]) ?? []);
   };
 
   useEffect(() => {
     load();
   }, []);
 
+  useReminderNotifier(reminders);
+
   const addTask = async () => {
     if (!title.trim()) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    const nextOrder = (tasks[tasks.length - 1]?.sort_order ?? 0) + 1;
     const { error } = await supabase.from("tasks").insert({
       user_id: user.id,
       title,
       due_date: dueDate || null,
       priority,
       category,
+      sort_order: nextOrder,
     });
     if (error) return toast.error(error.message);
     toast.success("Task added");
@@ -91,23 +126,53 @@ function Dashboard() {
 
   const deleteTask = async (id: string) => {
     await supabase.from("tasks").delete().eq("id", id);
+    toast.success("Task deleted");
     load();
   };
 
-  const upcoming = useMemo(
-    () => tasks.filter((t) => !t.completed).slice(0, 8),
-    [tasks],
-  );
+  const openTasksList = useMemo(() => tasks.filter((t) => !t.completed), [tasks]);
+  const completedTasksList = useMemo(() => tasks.filter((t) => t.completed), [tasks]);
 
   const chartData = useMemo(() => {
     const statuses = ["applied", "interview", "offer", "rejected"];
     return statuses.map((s) => ({ status: s, count: jobsByStatus[s] ?? 0 }));
   }, [jobsByStatus]);
 
-  const openTasks = tasks.filter((t) => !t.completed).length;
+  const openTasks = openTasksList.length;
   const overdue = tasks.filter(
     (t) => !t.completed && t.due_date && isPast(parseISO(t.due_date)),
   ).length;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = openTasksList.findIndex((t) => t.id === active.id);
+    const newIndex = openTasksList.findIndex((t) => t.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(openTasksList, oldIndex, newIndex);
+    // Optimistic update
+    const newTasksAll = [...reordered, ...completedTasksList].map((t, i) => ({ ...t, sort_order: i }));
+    setTasks(newTasksAll);
+    // Persist
+    await Promise.all(
+      reordered.map((t, i) =>
+        supabase.from("tasks").update({ sort_order: i }).eq("id", t.id),
+      ),
+    );
+  };
+
+  const enableNotifs = async () => {
+    const p = await requestPermission();
+    setPerm(p);
+    if (p === "granted") toast.success("Notifications enabled");
+    else if (p === "denied") toast.error("Notifications blocked in browser settings");
+  };
 
   return (
     <div className="space-y-8">
@@ -119,6 +184,15 @@ function Dashboard() {
             <h1 className="mt-1 text-3xl font-semibold tracking-tight">Welcome back</h1>
             <p className="mt-1 text-sm text-muted-foreground">Your German student life at a glance.</p>
           </div>
+        <div className="flex items-center gap-2">
+          {perm !== "granted" && perm !== "unsupported" && (
+            <Button variant="outline" size="sm" onClick={enableNotifs}>
+              <Bell className="mr-2 h-4 w-4" /> Enable reminders
+            </Button>
+          )}
+          {perm === "granted" && (
+            <Badge variant="secondary" className="gap-1"><BellRing className="h-3 w-3" /> Notifications on</Badge>
+          )}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="mr-2 h-4 w-4" /> New task</Button>
@@ -167,6 +241,7 @@ function Dashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
       </div>
 
@@ -180,70 +255,188 @@ function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming deadlines</CardTitle>
-            <CardDescription>Stay ahead of important dates.</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Tasks & deadlines</CardTitle>
+                <CardDescription>Drag to reorder. Check to complete.</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setShowCompleted((s) => !s)}>
+                {showCompleted ? "Hide" : "Show"} completed ({completedTasksList.length})
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-2">
-            {upcoming.length === 0 && (
+            {openTasksList.length === 0 && (
               <p className="text-sm text-muted-foreground">Nothing pending. Add a task to begin.</p>
             )}
-            {upcoming.map((t) => {
-              const daysLeft = t.due_date ? differenceInDays(parseISO(t.due_date), new Date()) : null;
-              return (
-                <div key={t.id} className="flex items-center justify-between rounded-md border p-3">
-                  <div className="flex items-start gap-3">
-                    <Checkbox checked={t.completed} onCheckedChange={() => toggleTask(t)} />
-                    <div>
-                      <div className="text-sm font-medium">{t.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {t.due_date ? format(parseISO(t.due_date), "PPP") : "No due date"}
-                        {daysLeft !== null && (
-                          <span className={daysLeft < 0 ? " text-destructive" : ""}>
-                            {" "}· {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d left`}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={t.priority === "high" ? "destructive" : t.priority === "low" ? "secondary" : "default"}>
-                      {t.priority}
-                    </Badge>
-                    <Button variant="ghost" size="sm" onClick={() => deleteTask(t.id)}>Remove</Button>
-                  </div>
-                </div>
-              );
-            })}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={openTasksList.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                {openTasksList.map((t) => (
+                  <SortableTaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} />
+                ))}
+              </SortableContext>
+            </DndContext>
+
+            {showCompleted && completedTasksList.length > 0 && (
+              <div className="pt-4">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Completed</div>
+                {completedTasksList.map((t) => (
+                  <TaskRow key={t.id} task={t} onToggle={toggleTask} onDelete={deleteTask} />
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Job applications</CardTitle>
-            <CardDescription>By current status.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                  <XAxis dataKey="status" stroke="currentColor" fontSize={12} />
-                  <YAxis allowDecimals={false} stroke="currentColor" fontSize={12} />
-                  <ReTooltip
-                    contentStyle={{
-                      background: "var(--popover)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 8,
-                      color: "var(--popover-foreground)",
-                    }}
-                  />
-                  <Bar dataKey="count" fill="var(--primary)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Upcoming reminders</CardTitle>
+                  <CardDescription>Visa, health, jobs and custom events.</CardDescription>
+                </div>
+                <Button asChild variant="ghost" size="sm"><Link to="/reminders">Manage</Link></Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {reminders.length === 0 && (
+                <p className="text-sm text-muted-foreground">No upcoming reminders.</p>
+              )}
+              {reminders.slice(0, 5).map((r) => (
+                <div key={r.id} className="flex items-start justify-between rounded-md border p-3">
+                  <div>
+                    <div className="text-sm font-medium">{r.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {r.reminder_at ? format(parseISO(r.reminder_at), "PPp") : r.due_date ? `Due ${format(parseISO(r.due_date), "PPP")}` : "No time set"}
+                    </div>
+                  </div>
+                  <Badge variant="secondary">{r.source_type}</Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Job applications</CardTitle>
+              <CardDescription>By current status.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis dataKey="status" stroke="currentColor" fontSize={12} />
+                    <YAxis allowDecimals={false} stroke="currentColor" fontSize={12} />
+                    <ReTooltip
+                      contentStyle={{
+                        background: "var(--popover)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8,
+                        color: "var(--popover-foreground)",
+                      }}
+                    />
+                    <Bar dataKey="count" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function TaskRow({
+  task,
+  onToggle,
+  onDelete,
+  dragHandle,
+}: {
+  task: Task;
+  onToggle: (t: Task) => void;
+  onDelete: (id: string) => void;
+  dragHandle?: React.ReactNode;
+}) {
+  const daysLeft = task.due_date ? differenceInDays(parseISO(task.due_date), new Date()) : null;
+  return (
+    <div className={`flex items-center justify-between rounded-md border p-3 ${task.completed ? "opacity-60" : ""}`}>
+      <div className="flex items-start gap-3">
+        {dragHandle}
+        <Checkbox checked={task.completed} onCheckedChange={() => onToggle(task)} />
+        <div>
+          <div className={`text-sm font-medium ${task.completed ? "line-through" : ""}`}>{task.title}</div>
+          <div className="text-xs text-muted-foreground">
+            {task.due_date ? format(parseISO(task.due_date), "PPP") : "No due date"}
+            {daysLeft !== null && !task.completed && (
+              <span className={daysLeft < 0 ? " text-destructive" : ""}>
+                {" "}· {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d left`}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant={task.priority === "high" ? "destructive" : task.priority === "low" ? "secondary" : "default"}>
+          {task.priority}
+        </Badge>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Delete task">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+              <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => onDelete(task.id)}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
+  );
+}
+
+function SortableTaskRow({
+  task,
+  onToggle,
+  onDelete,
+}: {
+  task: Task;
+  onToggle: (t: Task) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+  };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <TaskRow
+        task={task}
+        onToggle={onToggle}
+        onDelete={onDelete}
+        dragHandle={
+          <button
+            type="button"
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+            aria-label="Drag to reorder"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        }
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { LayoutDashboard, FileText, Briefcase, Mail, LogOut, Compass, Bot, HeartPulse } from "lucide-react";
+import { LayoutDashboard, FileText, Briefcase, Mail, LogOut, Compass, Bot, HeartPulse, Bell } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ const items = [
   { title: "German Email Helper", url: "/email-helper", icon: Mail },
   { title: "AI Assistant", url: "/assistant", icon: Bot },
   { title: "Student Health", url: "/health", icon: HeartPulse },
+  { title: "Reminders", url: "/reminders", icon: Bell },
 ];
 
 export function AppSidebar() {
