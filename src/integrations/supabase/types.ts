@@ -183,6 +183,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string
           created_at: string
           full_name: string | null
           home_country: string | null
@@ -190,6 +191,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accent_color?: string
           created_at?: string
           full_name?: string | null
           home_country?: string | null
@@ -197,6 +199,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accent_color?: string
           created_at?: string
           full_name?: string | null
           home_country?: string | null
