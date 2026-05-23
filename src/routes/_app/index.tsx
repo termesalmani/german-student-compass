@@ -36,6 +36,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_app/")({ component: Dashboard });
 
@@ -61,6 +62,8 @@ type Reminder = {
 };
 
 function Dashboard() {
+  const { user } = useAuth();
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [bureaucracyCount, setBureaucracyCount] = useState(0);
   const [jobsByStatus, setJobsByStatus] = useState<Record<string, number>>({});
@@ -109,6 +112,15 @@ function Dashboard() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle().then(({ data }) => {
+      const n = (data?.full_name ?? "").trim();
+      // Don't show email as a name — handle_new_user falls back to email
+      setDisplayName(n && !n.includes("@") ? n : null);
+    });
+  }, [user]);
 
   useReminderNotifier(reminders);
 
@@ -198,7 +210,9 @@ function Dashboard() {
         <div className="relative flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-primary">Dashboard</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">Welcome back</h1>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+              Welcome back{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span>
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">Your German student life at a glance.</p>
           </div>
         <div className="flex items-center gap-2">
