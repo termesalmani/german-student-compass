@@ -14,13 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      bureaucracy_files: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          item_id: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          id?: string
+          item_id: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          item_id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bureaucracy_files_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "bureaucracy_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bureaucracy_items: {
         Row: {
           category: string
+          completed: boolean
           created_at: string
           due_date: string | null
           id: string
           notes: string | null
+          reminder_at: string | null
           status: string
           title: string
           updated_at: string
@@ -28,10 +74,12 @@ export type Database = {
         }
         Insert: {
           category: string
+          completed?: boolean
           created_at?: string
           due_date?: string | null
           id?: string
           notes?: string | null
+          reminder_at?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -39,10 +87,12 @@ export type Database = {
         }
         Update: {
           category?: string
+          completed?: boolean
           created_at?: string
           due_date?: string | null
           id?: string
           notes?: string | null
+          reminder_at?: string | null
           status?: string
           title?: string
           updated_at?: string
