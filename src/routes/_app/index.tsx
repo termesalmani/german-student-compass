@@ -75,18 +75,35 @@ function Dashboard() {
   const [category, setCategory] = useState("general");
 
   const load = async () => {
-    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }] = await Promise.all([
+    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }, { data: bureauRem }] = await Promise.all([
       supabase.from("tasks").select("*").order("sort_order", { ascending: true }).order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("bureaucracy_items").select("*", { count: "exact", head: true }),
       supabase.from("job_applications").select("status"),
       supabase.from("reminders").select("*").eq("completed", false).order("reminder_at", { ascending: true, nullsFirst: false }),
+      supabase.from("bureaucracy_items").select("id,title,reminder_at,due_date,completed,category").eq("completed", false).not("reminder_at", "is", null).order("reminder_at", { ascending: true }),
     ]);
     setTasks((t as Task[]) ?? []);
     setBureaucracyCount(bCount ?? 0);
     const counts: Record<string, number> = {};
     (jobs ?? []).forEach((j: any) => (counts[j.status] = (counts[j.status] ?? 0) + 1));
     setJobsByStatus(counts);
-    setReminders((rem as Reminder[]) ?? []);
+    const merged: Reminder[] = [
+      ...((rem as Reminder[]) ?? []),
+      ...((bureauRem ?? []) as any[]).map((b) => ({
+        id: `b_${b.id}`,
+        title: b.title,
+        note: null,
+        reminder_at: b.reminder_at,
+        due_date: b.due_date,
+        completed: b.completed,
+        source_type: `bureaucracy: ${b.category}`,
+      })),
+    ].sort((a, b) => {
+      const ta = a.reminder_at ? new Date(a.reminder_at).getTime() : Infinity;
+      const tb = b.reminder_at ? new Date(b.reminder_at).getTime() : Infinity;
+      return ta - tb;
+    });
+    setReminders(merged);
   };
 
   useEffect(() => {
