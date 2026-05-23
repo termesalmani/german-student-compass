@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppRemindersRouteImport } from './routes/_app/reminders'
 import { Route as AppJobsRouteImport } from './routes/_app/jobs'
 import { Route as AppHealthRouteImport } from './routes/_app/health'
@@ -31,6 +32,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRemindersRoute = AppRemindersRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/health': typeof AppHealthRoute
   '/jobs': typeof AppJobsRoute
   '/reminders': typeof AppRemindersRoute
+  '/settings': typeof AppSettingsRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/health': typeof AppHealthRoute
   '/jobs': typeof AppJobsRoute
   '/reminders': typeof AppRemindersRoute
+  '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/_app/health': typeof AppHealthRoute
   '/_app/jobs': typeof AppJobsRoute
   '/_app/reminders': typeof AppRemindersRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/health'
     | '/jobs'
     | '/reminders'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/health'
     | '/jobs'
     | '/reminders'
+    | '/settings'
     | '/'
   id:
     | '__root__'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/_app/health'
     | '/_app/jobs'
     | '/_app/reminders'
+    | '/_app/settings'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -156,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/reminders': {
@@ -210,6 +229,7 @@ interface AppRouteChildren {
   AppHealthRoute: typeof AppHealthRoute
   AppJobsRoute: typeof AppJobsRoute
   AppRemindersRoute: typeof AppRemindersRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -220,6 +240,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHealthRoute: AppHealthRoute,
   AppJobsRoute: AppJobsRoute,
   AppRemindersRoute: AppRemindersRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -232,3 +253,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
