@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { setNotifPref } from "@/lib/notifications";
 
 export type AccentKey = "blue" | "purple" | "green" | "rose" | "orange";
 
@@ -46,12 +47,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.from("profiles").select("accent_color").eq("id", user.id).maybeSingle();
+      const { data } = await supabase.from("profiles").select("accent_color, notifications_enabled").eq("id", user.id).maybeSingle();
       if (cancelled) return;
       const v = (data?.accent_color ?? "blue") as AccentKey;
       if (v in ACCENTS) {
         setAccentState(v);
         window.localStorage.setItem(STORAGE_KEY, v);
+      }
+      if (typeof data?.notifications_enabled === "boolean") {
+        setNotifPref(data.notifications_enabled);
       }
     })();
     return () => { cancelled = true; };

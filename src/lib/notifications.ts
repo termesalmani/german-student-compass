@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 
 export type NotifPermission = "default" | "granted" | "denied" | "unsupported";
 
+const PREF_KEY = "gsc.notif";
+
+export function getNotifPref(): boolean {
+  if (typeof window === "undefined") return true;
+  return window.localStorage.getItem(PREF_KEY) !== "off";
+}
+
+export function setNotifPref(enabled: boolean) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(PREF_KEY, enabled ? "on" : "off");
+}
+
 export function getPermission(): NotifPermission {
   if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
   return Notification.permission as NotifPermission;
@@ -16,6 +28,7 @@ export async function requestPermission(): Promise<NotifPermission> {
 export function notify(title: string, body?: string) {
   if (typeof window === "undefined" || !("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
+  if (!getNotifPref()) return;
   try {
     new Notification(title, { body, icon: "/favicon.ico" });
   } catch {
