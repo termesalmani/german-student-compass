@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Upload, Download, Eye, Pencil, Bell, BellRing } from "lucide-react";
 import { toast } from "sonner";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_app/bureaucracy")({ component: BureaucracyPage });
@@ -277,6 +277,31 @@ function ItemCard({
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [editingReminder, setEditingReminder] = useState(false);
+  const [reminderInput, setReminderInput] = useState(
+    item.reminder_at ? new Date(item.reminder_at).toISOString().slice(0, 16) : "",
+  );
+
+  const daysLeft = item.due_date ? differenceInDays(parseISO(item.due_date), new Date()) : null;
+  const isOverdue = daysLeft !== null && daysLeft < 0 && !item.completed;
+  const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3 && !item.completed;
+
+  const urgencyClass = item.completed
+    ? "opacity-60"
+    : isOverdue
+      ? "border-destructive/60 bg-destructive/5"
+      : isUrgent
+        ? "border-amber-500/60 bg-amber-500/5"
+        : "";
+
+  const saveReminder = async () => {
+    const iso = reminderInput ? new Date(reminderInput).toISOString() : null;
+    const { error } = await supabase.from("bureaucracy_items").update({ reminder_at: iso }).eq("id", item.id);
+    if (error) return toast.error(error.message);
+    toast.success(iso ? "Reminder set" : "Reminder cleared");
+    setEditingReminder(false);
+    onChanged();
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -341,14 +366,21 @@ function ItemCard({
   };
 
   return (
-    <div className={`rounded-md border p-3 ${item.completed ? "opacity-60" : ""}`}>
+    <div className={`rounded-md border p-3 ${urgencyClass}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2">
           <Checkbox checked={item.completed} onCheckedChange={onToggle} className="mt-0.5" />
           <div className="min-w-0">
             <div className={`truncate text-sm font-medium ${item.completed ? "line-through" : ""}`}>{item.title}</div>
             {item.due_date && (
-              <div className="text-xs text-muted-foreground">Due {format(parseISO(item.due_date), "PP")}</div>
+              <div className="text-xs text-muted-foreground">
+                Due {format(parseISO(item.due_date), "PP")}
+                {daysLeft !== null && !item.completed && (
+                  <span className={isOverdue ? " text-destructive font-medium" : isUrgent ? " text-amber-600 font-medium" : ""}>
+                    {" "}· {daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? "today" : `${daysLeft}d left`}
+                  </span>
+                )}
+              </div>
             )}
             {item.reminder_at && (
               <div className="text-xs text-muted-foreground">Remind {format(parseISO(item.reminder_at), "PPp")}</div>
@@ -364,13 +396,35 @@ function ItemCard({
         <Badge variant={item.status === "done" ? "secondary" : item.status === "in_progress" ? "default" : "outline"}>
           {item.status.replace("_", " ")}
         </Badge>
+        {isOverdue && <Badge variant="destructive">overdue</Badge>}
+        {isUrgent && <Badge className="bg-amber-500 text-white hover:bg-amber-500/90">due soon</Badge>}
         <Select value={item.status} onValueChange={onStatus}>
           <SelectTrigger className="h-7 w-32 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
             {STATUSES.map((s) => <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setEditingReminder((s) => !s)}>
+          <Bell className="mr-1 h-3 w-3" /> {item.reminder_at ? "Edit reminder" : "Add reminder"}
+        </Button>
       </div>
+
+      {editingReminder && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 rounded border bg-muted/30 p-2">
+          <Input
+            type="datetime-local"
+            value={reminderInput}
+            onChange={(e) => setReminderInput(e.target.value)}
+            className="h-8 max-w-[14rem] text-xs"
+          />
+          <Button size="sm" className="h-7" onClick={saveReminder}>Save</Button>
+          {item.reminder_at && (
+            <Button size="sm" variant="ghost" className="h-7" onClick={() => { setReminderInput(""); saveReminder(); }}>
+              Clear
+            </Button>
+          )}
+        </div>
+      )}
 
       <div className="mt-3 space-y-1.5">
         {files.map((f) => (
