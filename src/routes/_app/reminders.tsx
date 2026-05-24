@@ -201,32 +201,3 @@ export function RemindersManager() {
     </div>
   );
 }
-
-function PermissionBadge({ perm, onEnable }: { perm: string; onEnable: () => void }) {
-  if (perm === "granted") {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <BellRing className="h-3 w-3" /> Notifications on
-      </Badge>
-    );
-  }
-  if (perm === "unsupported") {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <BellOff className="h-3 w-3" /> Browser not supported
-      </Badge>
-    );
-  }
-  if (perm === "denied") {
-    return (
-      <Badge variant="destructive" className="gap-1">
-        <BellOff className="h-3 w-3" /> Notifications blocked
-      </Badge>
-    );
-  }
-  return (
-    <Button variant="outline" size="sm" onClick={onEnable}>
-      <Bell className="mr-2 h-4 w-4" /> Enable notifications
-    </Button>
-  );
-}
