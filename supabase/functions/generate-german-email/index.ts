@@ -26,7 +26,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const system = `You are an assistant helping international students in Germany write polite, formal German emails (Sie-form, Hochdeutsch). 
+    const isCasual = typeof tone === "string" && tone.toLowerCase().includes("casual");
+    const system = isCasual
+      ? `You are an assistant helping international students in Germany write friendly, casual German emails or messages (Du-form, Hochdeutsch, warm and human but still respectful).
+Always produce:
+1. A short subject line on the first line, prefixed with "Betreff: ".
+2. A warm, casual salutation (e.g. "Hallo [Name]," or "Hi [Name],").
+3. A natural, conversational body in casual German.
+4. A friendly closing such as "Liebe Grüße" or "Viele Grüße" with a placeholder for the sender's name.
+Keep it concise, natural, and human. Return ONLY the email, nothing else.`
+      : `You are an assistant helping international students in Germany write polite, formal German emails (Sie-form, Hochdeutsch).
 Always produce:
 1. A short subject line on the first line, prefixed with "Betreff: ".
 2. A proper salutation ("Sehr geehrte Damen und Herren," or named if provided).

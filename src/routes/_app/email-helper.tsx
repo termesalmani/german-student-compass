@@ -78,6 +78,7 @@ function EmailHelper() {
                   <SelectItem value="urgent but polite">Urgent but polite</SelectItem>
                   <SelectItem value="apologetic">Apologetic</SelectItem>
                   <SelectItem value="friendly and formal">Friendly but formal</SelectItem>
+                  <SelectItem value="friendly and casual">Friendly & casual</SelectItem>
                 </SelectContent>
               </Select>
             </div>

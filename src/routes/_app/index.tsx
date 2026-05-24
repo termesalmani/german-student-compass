@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +36,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
 import { useAuth } from "@/lib/auth";
+import { RemindersManager } from "./reminders";
 
 export const Route = createFileRoute("/_app/")({ component: Dashboard });
 
@@ -69,6 +69,7 @@ function Dashboard() {
   const [jobsByStatus, setJobsByStatus] = useState<Record<string, number>>({});
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [open, setOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const { perm, setPerm } = usePermission();
 
@@ -78,12 +79,13 @@ function Dashboard() {
   const [category, setCategory] = useState("general");
 
   const load = async () => {
-    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }, { data: bureauRem }] = await Promise.all([
+    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }, { data: bureauRem }, { data: healthRem }] = await Promise.all([
       supabase.from("tasks").select("*").order("sort_order", { ascending: true }).order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("bureaucracy_items").select("*", { count: "exact", head: true }),
       supabase.from("job_applications").select("status"),
       supabase.from("reminders").select("*").eq("completed", false).order("reminder_at", { ascending: true, nullsFirst: false }),
       supabase.from("bureaucracy_items").select("id,title,reminder_at,due_date,completed,category").eq("completed", false).not("reminder_at", "is", null).order("reminder_at", { ascending: true }),
+      supabase.from("health_reminders").select("id,title,due_date,category,completed").eq("completed", false).not("due_date", "is", null).order("due_date", { ascending: true }),
     ]);
     setTasks((t as Task[]) ?? []);
     setBureaucracyCount(bCount ?? 0);
@@ -101,9 +103,18 @@ function Dashboard() {
         completed: b.completed,
         source_type: `bureaucracy: ${b.category}`,
       })),
+      ...((healthRem ?? []) as any[]).map((h) => ({
+        id: `h_${h.id}`,
+        title: h.title,
+        note: null,
+        reminder_at: null,
+        due_date: h.due_date,
+        completed: h.completed,
+        source_type: `health: ${h.category}`,
+      })),
     ].sort((a, b) => {
-      const ta = a.reminder_at ? new Date(a.reminder_at).getTime() : Infinity;
-      const tb = b.reminder_at ? new Date(b.reminder_at).getTime() : Infinity;
+      const ta = a.reminder_at ? new Date(a.reminder_at).getTime() : a.due_date ? new Date(a.due_date).getTime() : Infinity;
+      const tb = b.reminder_at ? new Date(b.reminder_at).getTime() : b.due_date ? new Date(b.due_date).getTime() : Infinity;
       return ta - tb;
     });
     setReminders(merged);
@@ -327,7 +338,15 @@ function Dashboard() {
                   <CardTitle>Upcoming reminders</CardTitle>
                   <CardDescription>Visa, health, jobs and custom events.</CardDescription>
                 </div>
-                <Button asChild variant="ghost" size="sm"><Link to="/reminders">Manage</Link></Button>
+                <Dialog open={manageOpen} onOpenChange={setManageOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm">Manage reminders</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
+                    <DialogHeader><DialogTitle>Manage reminders</DialogTitle></DialogHeader>
+                    <RemindersManager />
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
