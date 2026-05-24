@@ -188,6 +188,7 @@ export type Database = {
           full_name: string | null
           home_country: string | null
           id: string
+          notifications_enabled: boolean
           updated_at: string
         }
         Insert: {
@@ -196,6 +197,7 @@ export type Database = {
           full_name?: string | null
           home_country?: string | null
           id: string
+          notifications_enabled?: boolean
           updated_at?: string
         }
         Update: {
@@ -204,6 +206,7 @@ export type Database = {
           full_name?: string | null
           home_country?: string | null
           id?: string
+          notifications_enabled?: boolean
           updated_at?: string
         }
         Relationships: []

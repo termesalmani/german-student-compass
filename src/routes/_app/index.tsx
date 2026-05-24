@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, CalendarDays, ListTodo, Briefcase, FileText, Trash2, GripVertical, Bell, BellRing } from "lucide-react";
+import { Plus, CalendarDays, ListTodo, Briefcase, FileText, Trash2, GripVertical } from "lucide-react";
 import { format, isPast, parseISO, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -34,7 +34,7 @@ import {
   useSortable, verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
+import { useReminderNotifier } from "@/lib/notifications";
 import { useAuth } from "@/lib/auth";
 import { RemindersManager } from "./reminders";
 
@@ -71,7 +71,6 @@ function Dashboard() {
   const [open, setOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
-  const { perm, setPerm } = usePermission();
 
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -207,13 +206,6 @@ function Dashboard() {
     );
   };
 
-  const enableNotifs = async () => {
-    const p = await requestPermission();
-    setPerm(p);
-    if (p === "granted") toast.success("Notifications enabled");
-    else if (p === "denied") toast.error("Notifications blocked in browser settings");
-  };
-
   return (
     <div className="space-y-8">
       <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 via-background to-background p-6">
@@ -227,14 +219,6 @@ function Dashboard() {
             <p className="mt-1 text-sm text-muted-foreground">Your German student life at a glance.</p>
           </div>
         <div className="flex items-center gap-2">
-          {perm !== "granted" && perm !== "unsupported" && (
-            <Button variant="outline" size="sm" onClick={enableNotifs}>
-              <Bell className="mr-2 h-4 w-4" /> Enable reminders
-            </Button>
-          )}
-          {perm === "granted" && (
-            <Badge variant="secondary" className="gap-1"><BellRing className="h-3 w-3" /> Notifications on</Badge>
-          )}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="mr-2 h-4 w-4" /> New task</Button>

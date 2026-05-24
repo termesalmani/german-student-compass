@@ -10,10 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Upload, Download, Eye, Pencil, Bell, BellRing } from "lucide-react";
+import { Plus, Trash2, Upload, Download, Eye, Pencil, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO, differenceInDays } from "date-fns";
-import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
+import { useReminderNotifier } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_app/bureaucracy")({ component: BureaucracyPage });
 
@@ -64,7 +64,6 @@ function BureaucracyPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [files, setFiles] = useState<FileRow[]>([]);
   const [open, setOpen] = useState(false);
-  const { perm, setPerm } = usePermission();
   const [form, setForm] = useState({
     category: "visa",
     title: "",
@@ -144,13 +143,6 @@ function BureaucracyPage() {
     load();
   };
 
-  const askPermission = async () => {
-    const p = await requestPermission();
-    setPerm(p);
-    if (p === "granted") toast.success("Notifications enabled");
-    else if (p === "denied") toast.error("Notifications blocked in browser settings");
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -159,14 +151,6 @@ function BureaucracyPage() {
           <p className="text-sm text-muted-foreground">Visa, insurance, blocked account, university, bank, housing.</p>
         </div>
         <div className="flex items-center gap-2">
-          {perm !== "granted" && perm !== "unsupported" && (
-            <Button variant="outline" size="sm" onClick={askPermission}>
-              <Bell className="mr-2 h-4 w-4" /> Enable notifications
-            </Button>
-          )}
-          {perm === "granted" && (
-            <Badge variant="secondary" className="gap-1"><BellRing className="h-3 w-3" /> Notifications on</Badge>
-          )}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> New item</Button></DialogTrigger>
           <DialogContent>

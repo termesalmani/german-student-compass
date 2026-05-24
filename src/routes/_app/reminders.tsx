@@ -10,10 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, BellOff, BellRing, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
-import { usePermission, requestPermission, useReminderNotifier } from "@/lib/notifications";
+import { useReminderNotifier } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_app/reminders")({ component: RemindersPage });
 
@@ -43,7 +43,6 @@ function RemindersPage() {
 export function RemindersManager() {
   const [items, setItems] = useState<Reminder[]>([]);
   const [open, setOpen] = useState(false);
-  const { perm, setPerm } = usePermission();
 
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
@@ -97,17 +96,9 @@ export function RemindersManager() {
     load();
   };
 
-  const askPermission = async () => {
-    const p = await requestPermission();
-    setPerm(p);
-    if (p === "granted") toast.success("Notifications enabled");
-    else if (p === "denied") toast.error("Notifications blocked in browser settings");
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
-          <PermissionBadge perm={perm} onEnable={askPermission} />
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="mr-2 h-4 w-4" /> New reminder</Button>
@@ -208,34 +199,5 @@ export function RemindersManager() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function PermissionBadge({ perm, onEnable }: { perm: string; onEnable: () => void }) {
-  if (perm === "granted") {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <BellRing className="h-3 w-3" /> Notifications on
-      </Badge>
-    );
-  }
-  if (perm === "unsupported") {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <BellOff className="h-3 w-3" /> Browser not supported
-      </Badge>
-    );
-  }
-  if (perm === "denied") {
-    return (
-      <Badge variant="destructive" className="gap-1">
-        <BellOff className="h-3 w-3" /> Notifications blocked
-      </Badge>
-    );
-  }
-  return (
-    <Button variant="outline" size="sm" onClick={onEnable}>
-      <Bell className="mr-2 h-4 w-4" /> Enable notifications
-    </Button>
   );
 }
