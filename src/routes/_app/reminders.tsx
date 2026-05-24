@@ -29,6 +29,18 @@ type Reminder = {
 };
 
 function RemindersPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Reminders</h1>
+        <p className="text-sm text-muted-foreground">Visa, deadlines, health checkups, jobs and custom events.</p>
+      </div>
+      <RemindersManager />
+    </div>
+  );
+}
+
+export function RemindersManager({ compact = false }: { compact?: boolean }) {
   const [items, setItems] = useState<Reminder[]>([]);
   const [open, setOpen] = useState(false);
   const { perm, setPerm } = usePermission();
@@ -93,13 +105,8 @@ function RemindersPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Reminders</h1>
-          <p className="text-sm text-muted-foreground">Visa, deadlines, health checkups, jobs and custom events.</p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
           <PermissionBadge perm={perm} onEnable={askPermission} />
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -165,7 +172,6 @@ function RemindersPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
       </div>
 
       <Card>
