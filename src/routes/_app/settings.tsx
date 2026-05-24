@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { Check, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { getNotifPref, setNotifPref, getPermission, requestPermission, type NotifPermission } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 
@@ -17,11 +19,19 @@ function SettingsPage() {
   const { accent, setAccent } = useTheme();
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [notifEnabled, setNotifEnabled] = useState<boolean>(() => getNotifPref());
+  const [perm, setPerm] = useState<NotifPermission>("default");
+
+  useEffect(() => { setPerm(getPermission()); }, []);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle().then(({ data }) => {
+    supabase.from("profiles").select("full_name, notifications_enabled").eq("id", user.id).maybeSingle().then(({ data }) => {
       setName(data?.full_name ?? "");
+      if (typeof data?.notifications_enabled === "boolean") {
+        setNotifEnabled(data.notifications_enabled);
+        setNotifPref(data.notifications_enabled);
+      }
     });
   }, [user]);
 
@@ -32,6 +42,24 @@ function SettingsPage() {
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Display name saved");
+  };
+
+  const toggleNotifications = async (next: boolean) => {
+    if (next && perm !== "granted") {
+      const p = await requestPermission();
+      setPerm(p);
+      if (p !== "granted") {
+        toast.error(p === "denied" ? "Notifications are blocked in your browser settings." : "Permission not granted.");
+        return;
+      }
+    }
+    setNotifEnabled(next);
+    setNotifPref(next);
+    if (user) {
+      const { error } = await supabase.from("profiles").update({ notifications_enabled: next }).eq("id", user.id);
+      if (error) toast.error(error.message);
+    }
+    toast.success(next ? "Browser notifications enabled" : "Browser notifications disabled");
   };
 
   return (
@@ -56,6 +84,39 @@ function SettingsPage() {
             <Input value={user?.email ?? ""} disabled />
           </div>
           <Button onClick={saveName} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Bell className="h-4 w-4" /> Notifications</CardTitle>
+          <CardDescription>Control browser notifications for upcoming reminders.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div>
+              <div className="text-sm font-medium">
+                {notifEnabled ? "Disable browser notifications" : "Enable browser notifications"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {perm === "unsupported"
+                  ? "Your browser does not support notifications. In-app reminders are still active."
+                  : notifEnabled && perm === "granted"
+                    ? "Browser notifications are enabled."
+                    : "Browser notifications are disabled. In-app reminders are still active."}
+              </div>
+            </div>
+            <Switch
+              checked={notifEnabled && perm === "granted"}
+              disabled={perm === "unsupported" || perm === "denied"}
+              onCheckedChange={toggleNotifications}
+            />
+          </div>
+          {perm === "denied" && (
+            <p className="text-xs text-destructive">
+              Notifications are blocked at the browser level. Enable them in your browser site settings, then reload.
+            </p>
+          )}
         </CardContent>
       </Card>
 
