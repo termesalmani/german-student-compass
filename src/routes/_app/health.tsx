@@ -145,7 +145,17 @@ function HealthPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Frequency</Label>
-                  <Input value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} placeholder="e.g. yearly" />
+                  <Select value={form.frequency || "yearly"} onValueChange={(v) => setForm({ ...form, frequency: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one-time">One-time</SelectItem>
+                      <SelectItem value="monthly">Every month</SelectItem>
+                      <SelectItem value="every 3 months">Every 3 months</SelectItem>
+                      <SelectItem value="every 6 months">Every 6 months</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                      <SelectItem value="every 2 years">Every 2 years</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
