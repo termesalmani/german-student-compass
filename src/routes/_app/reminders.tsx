@@ -40,7 +40,7 @@ function RemindersPage() {
   );
 }
 
-export function RemindersManager({ compact = false }: { compact?: boolean }) {
+export function RemindersManager() {
   const [items, setItems] = useState<Reminder[]>([]);
   const [open, setOpen] = useState(false);
   const { perm, setPerm } = usePermission();
