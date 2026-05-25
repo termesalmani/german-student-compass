@@ -129,6 +129,15 @@ function AuthPage() {
             </Button>
           </CardContent>
         </Card>
+        <div className="mt-8 text-center">
+          <p className="text-sm font-medium text-foreground/80">German Student Compass</p>
+          <p className="mt-1 text-xs text-muted-foreground/80">
+            A calmer way to organize student life in Germany.
+          </p>
+          <p className="mt-4 text-xs tracking-wide text-muted-foreground/60">
+            Designed with care ♡
+          </p>
+        </div>
       </div>
     </div>
   );
