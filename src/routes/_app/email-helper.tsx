@@ -83,7 +83,7 @@ function EmailHelper() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>What do you need to say?</Label>
+              <Label>What would help you say this clearly?</Label>
               <Textarea
                 rows={8}
                 value={situation}

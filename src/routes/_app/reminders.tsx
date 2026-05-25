@@ -172,7 +172,7 @@ export function RemindersManager() {
         </CardHeader>
         <CardContent className="space-y-2">
           {items.length === 0 && (
-            <p className="text-sm text-muted-foreground">No reminders yet.</p>
+            <p className="text-sm text-muted-foreground">Your future self will thank you for this one. Add a small reminder to begin.</p>
           )}
           {items.map((r) => (
             <div key={r.id} className={`flex items-start justify-between gap-3 rounded-md border p-3 ${r.completed ? "opacity-60" : ""}`}>

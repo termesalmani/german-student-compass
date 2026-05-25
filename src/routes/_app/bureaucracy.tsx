@@ -148,7 +148,7 @@ function BureaucracyPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Bureaucracy tracker</h1>
-          <p className="text-sm text-muted-foreground">Visa, insurance, blocked account, university, bank, housing.</p>
+          <p className="text-sm text-muted-foreground">Keep your important documents and deadlines together here.</p>
         </div>
         <div className="flex items-center gap-2">
         <Dialog open={open} onOpenChange={setOpen}>
@@ -227,7 +227,7 @@ function BureaucracyPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {catItems.length === 0 && (
-                  <p className="text-xs text-muted-foreground">No items yet.</p>
+                  <p className="text-xs text-muted-foreground">Start with the thing that stresses you out the most.</p>
                 )}
                 {catItems.map((it) => (
                   <ItemCard

@@ -216,7 +216,7 @@ function Dashboard() {
             <h1 className="mt-1 text-3xl font-semibold tracking-tight">
               Welcome back{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span>
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">Your German student life at a glance.</p>
+            <p className="mt-1 text-sm text-muted-foreground">A calmer view of your German student life.</p>
           </div>
         <div className="flex items-center gap-2">
         <Dialog open={open} onOpenChange={setOpen}>
@@ -284,7 +284,7 @@ function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Tasks & deadlines</CardTitle>
-                <CardDescription>Drag to reorder. Check to complete.</CardDescription>
+                <CardDescription>One step at a time. Drag to reorder.</CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowCompleted((s) => !s)}>
                 {showCompleted ? "Hide" : "Show"} completed ({completedTasksList.length})
@@ -293,7 +293,7 @@ function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-2">
             {openTasksList.length === 0 && (
-              <p className="text-sm text-muted-foreground">Nothing pending. Add a task to begin.</p>
+              <p className="text-sm text-muted-foreground">One step at a time. Add what matters first.</p>
             )}
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <SortableContext items={openTasksList.map((t) => t.id)} strategy={verticalListSortingStrategy}>
@@ -319,8 +319,8 @@ function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Upcoming reminders</CardTitle>
-                  <CardDescription>Visa, health, jobs and custom events.</CardDescription>
+                  <CardTitle>Things worth keeping in sight</CardTitle>
+                  <CardDescription>Visa, health, jobs, and anything you'd rather not forget.</CardDescription>
                 </div>
                 <Dialog open={manageOpen} onOpenChange={setManageOpen}>
                   <DialogTrigger asChild>
@@ -335,7 +335,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-2">
               {reminders.length === 0 && (
-                <p className="text-sm text-muted-foreground">No upcoming reminders.</p>
+                <p className="text-sm text-muted-foreground">Nothing on the horizon. A small reminder now can save future stress.</p>
               )}
               {reminders.slice(0, 5).map((r) => (
                 <div key={r.id} className="flex items-start justify-between rounded-md border p-3">

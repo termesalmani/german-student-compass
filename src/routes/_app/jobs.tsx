@@ -173,7 +173,7 @@ function JobsPage() {
             </TableHeader>
             <TableBody>
               {jobs.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">No applications yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">Nothing here yet. Add the first application when you're ready.</TableCell></TableRow>
               )}
               {jobs.map((j) => (
                 <Fragment key={j.id}>
