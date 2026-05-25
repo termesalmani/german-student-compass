@@ -28,10 +28,10 @@ German Student Compass is designed to feel:
 
 - calm
 - practical
-- human-centered
-- low-pressure
+- human centered
+- low pressure
 - supportive
-- privacy-aware
+- privacy aware
 
 The goal is not to create another stressful productivity app, but a softer system for keeping student life manageable.
 
