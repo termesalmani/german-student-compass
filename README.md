@@ -2,7 +2,7 @@
 
 A calm productivity and organization platform designed with care for international students in Germany.
 
-German Student Compass helps students keep important deadlines, documents, applications, reminders, and German communication in one organized place — without feeling overwhelmed.
+German Student Compass helps students keep important deadlines, documents, applications, reminders, and German communication in one organized place without feeling overwhelmed.
 
 ## Core Features
 
