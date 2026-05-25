@@ -9,12 +9,12 @@ German Student Compass helps students keep important deadlines, documents, appli
 - Personalized dashboard for important tasks and reminders
 - Bureaucracy tracker for official deadlines and documents
 - Job application tracker
-- AI-assisted German email helper
-- Student health and self-care reminders
-- Low-budget student meal ideas
+- AI assisted German email helper
+- Student health and self care reminders
+- Low budget student meal ideas
 - Optional document upload and file management
 - Warm onboarding and guided setup flow
-- Responsive dark-mode interface
+- Responsive dark mode interface
 
 ## Purpose
 
