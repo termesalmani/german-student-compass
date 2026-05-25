@@ -56,7 +56,7 @@ function AssistantPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">AI Assistant</h1>
         <p className="text-sm text-muted-foreground">
-          Your study buddy for bureaucracy, jobs, emails, and student life in Germany.
+          A calm helper for bureaucracy, jobs, emails, and student life in Germany.
         </p>
       </div>
 
