@@ -18,7 +18,7 @@ German Student Compass helps students keep important deadlines, documents, appli
 
 ## Purpose
 
-International students in Germany often deal with scattered deadlines, bureaucracy, job applications, housing stress, university communication, and daily-life organization.
+International students in Germany often deal with scattered deadlines, bureaucracy, job applications, housing stress, university communication, and daily life organization.
 
 This app is built to reduce mental load and help students feel more organized, supported, and in control.
 
