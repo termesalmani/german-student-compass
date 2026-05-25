@@ -379,6 +379,9 @@ function Dashboard() {
           </Card>
         </div>
       </div>
+      <footer className="mt-10 pb-4 text-center text-xs tracking-wide text-muted-foreground/60">
+        Designed with care ♡
+      </footer>
     </div>
   );
 }
