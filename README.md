@@ -57,5 +57,5 @@ This is an early MVP being improved through iteration, testing, and user feedbac
 - Improve onboarding and user guidance
 - Polish the visual design and mobile experience
 - Improve reminder and notification reliability
-- Add better privacy and file-management controls
+- Add better privacy and file management controls
 - Prepare for a public launch and student feedback
