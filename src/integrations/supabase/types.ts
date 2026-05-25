@@ -189,6 +189,8 @@ export type Database = {
           home_country: string | null
           id: string
           notifications_enabled: boolean
+          onboarding_completed: boolean
+          overwhelm_areas: string[]
           updated_at: string
         }
         Insert: {
@@ -198,6 +200,8 @@ export type Database = {
           home_country?: string | null
           id: string
           notifications_enabled?: boolean
+          onboarding_completed?: boolean
+          overwhelm_areas?: string[]
           updated_at?: string
         }
         Update: {
@@ -207,6 +211,8 @@ export type Database = {
           home_country?: string | null
           id?: string
           notifications_enabled?: boolean
+          onboarding_completed?: boolean
+          overwhelm_areas?: string[]
           updated_at?: string
         }
         Relationships: []
