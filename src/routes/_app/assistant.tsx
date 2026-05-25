@@ -12,10 +12,12 @@ export const Route = createFileRoute("/_app/assistant")({ component: AssistantPa
 type Msg = { role: "user" | "assistant"; content: string };
 
 const STARTERS = [
-  "Help me write a formal German email",
+  "Help me write to the Ausländerbehörde",
+  "Create a student CV",
   "Help me organize my visa documents",
-  "Help me improve my job application",
-  "Help me plan my study week",
+  "Plan my study week",
+  "Explain a German insurance letter I received",
+  "Write a friendly German email",
 ];
 
 function AssistantPage() {
@@ -66,8 +68,8 @@ function AssistantPage() {
                 <Bot className="h-7 w-7" />
               </div>
               <div>
-                <p className="font-medium">Ask me anything about student life in Germany.</p>
-                <p className="text-sm text-muted-foreground">Try one of these to get started:</p>
+                <p className="font-medium">What's taking up the most mental space right now?</p>
+                <p className="text-sm text-muted-foreground">Pick a starting point — or just type what's on your mind.</p>
               </div>
               <div className="grid w-full max-w-xl gap-2 sm:grid-cols-2">
                 {STARTERS.map((s) => (
