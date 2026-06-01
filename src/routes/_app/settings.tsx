@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, Bell } from "lucide-react";
+import { Check, Bell, User, Palette, Mail, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { getNotifPref, setNotifPref, getPermission, requestPermission, type NotifPermission } from "@/lib/notifications";
 
@@ -21,6 +21,16 @@ function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState<boolean>(() => getNotifPref());
   const [perm, setPerm] = useState<NotifPermission>("default");
+
+  // Change email state
+  const [newEmail, setNewEmail] = useState("");
+  const [emailSaving, setEmailSaving] = useState(false);
+
+  // Change password state
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
 
   useEffect(() => { setPerm(getPermission()); }, []);
 
@@ -42,6 +52,39 @@ function SettingsPage() {
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Display name saved");
+  };
+
+  const changeEmail = async () => {
+    const trimmed = newEmail.trim();
+    if (!trimmed) return toast.error("Enter a new email");
+    if (trimmed === user?.email) return toast.error("That's already your email");
+    setEmailSaving(true);
+    const { error } = await supabase.auth.updateUser({ email: trimmed });
+    setEmailSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Check your inbox to confirm the new email.");
+    setNewEmail("");
+  };
+
+  const changePassword = async () => {
+    if (!user?.email) return;
+    if (newPwd.length < 6) return toast.error("New password must be at least 6 characters");
+    if (newPwd !== confirmPwd) return toast.error("Passwords don't match");
+    setPwdSaving(true);
+    // Re-verify current password
+    const { error: signErr } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPwd,
+    });
+    if (signErr) {
+      setPwdSaving(false);
+      return toast.error("Current password is incorrect");
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPwd });
+    setPwdSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password updated");
+    setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
   };
 
   const toggleNotifications = async (next: boolean) => {
@@ -69,6 +112,12 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">Personalize your German Student Compass.</p>
       </div>
 
+      <div className="space-y-1">
+        <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <User className="h-3.5 w-3.5" /> Account
+        </h2>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
@@ -86,6 +135,56 @@ function SettingsPage() {
           <Button onClick={saveName} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4" /> Change email</CardTitle>
+          <CardDescription>We'll send a confirmation link to the new address before the change takes effect.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <Label>New email</Label>
+            <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="you@example.com" />
+          </div>
+          <Button onClick={changeEmail} disabled={emailSaving}>{emailSaving ? "Sending..." : "Update email"}</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Lock className="h-4 w-4" /> Change password</CardTitle>
+          <CardDescription>Enter your current password to set a new one.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <Label>Current password</Label>
+            <Input type="password" value={currentPwd} onChange={(e) => setCurrentPwd(e.target.value)} autoComplete="current-password" />
+          </div>
+          <div className="space-y-2">
+            <Label>New password</Label>
+            <Input type="password" value={newPwd} onChange={(e) => setNewPwd(e.target.value)} autoComplete="new-password" />
+          </div>
+          <div className="space-y-2">
+            <Label>Confirm new password</Label>
+            <Input type="password" value={confirmPwd} onChange={(e) => setConfirmPwd(e.target.value)} autoComplete="new-password" />
+            {confirmPwd.length > 0 && newPwd !== confirmPwd && (
+              <p className="text-xs text-destructive">Passwords don't match.</p>
+            )}
+          </div>
+          <Button
+            onClick={changePassword}
+            disabled={pwdSaving || !currentPwd || !newPwd || newPwd !== confirmPwd}
+          >
+            {pwdSaving ? "Updating..." : "Update password"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-1 pt-2">
+        <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <Bell className="h-3.5 w-3.5" /> Notifications
+        </h2>
+      </div>
 
       <Card>
         <CardHeader>
@@ -119,6 +218,12 @@ function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <div className="space-y-1 pt-2">
+        <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <Palette className="h-3.5 w-3.5" /> Appearance
+        </h2>
+      </div>
 
       <Card>
         <CardHeader>

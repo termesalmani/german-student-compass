@@ -14,6 +14,7 @@ import { Plus, Trash2, Upload, Download, Eye, Pencil, Bell } from "lucide-react"
 import { toast } from "sonner";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { useReminderNotifier } from "@/lib/notifications";
+import JSZip from "jszip";
 
 export const Route = createFileRoute("/_app/bureaucracy")({ component: BureaucracyPage });
 
@@ -64,6 +65,7 @@ function BureaucracyPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [files, setFiles] = useState<FileRow[]>([]);
   const [open, setOpen] = useState(false);
+  const [zipping, setZipping] = useState(false);
   const [form, setForm] = useState({
     category: "visa",
     title: "",
@@ -143,6 +145,57 @@ function BureaucracyPage() {
     load();
   };
 
+  const downloadAll = async () => {
+    if (files.length === 0) return toast.error("No files to download yet.");
+    setZipping(true);
+    const zip = new JSZip();
+    const categoryByItem = new Map(items.map((i) => [i.id, i.category]));
+    const categoryLabel = (key: string) =>
+      CATEGORIES.find((c) => c.key === key)?.label ?? key;
+    const usedNames = new Set<string>();
+    let failed = 0;
+
+    await Promise.all(
+      files.map(async (f) => {
+        try {
+          const { data, error } = await supabase.storage.from(BUCKET).download(f.storage_path);
+          if (error || !data) { failed++; return; }
+          const folder = categoryLabel(categoryByItem.get(f.item_id) ?? "other");
+          let name = `${folder}/${f.file_name}`;
+          let i = 1;
+          while (usedNames.has(name)) {
+            const dot = f.file_name.lastIndexOf(".");
+            const base = dot > 0 ? f.file_name.slice(0, dot) : f.file_name;
+            const ext = dot > 0 ? f.file_name.slice(dot) : "";
+            name = `${folder}/${base} (${i})${ext}`;
+            i++;
+          }
+          usedNames.add(name);
+          zip.file(name, data);
+        } catch {
+          failed++;
+        }
+      }),
+    );
+
+    try {
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = format(new Date(), "yyyy-MM-dd");
+      a.href = url;
+      a.download = `bureaucracy-files-${stamp}.zip`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      if (failed > 0) toast.warning(`Downloaded ZIP. ${failed} file${failed > 1 ? "s" : ""} couldn't be included.`);
+      else toast.success("Your files are on the way.");
+    } catch (e) {
+      toast.error("Couldn't build the ZIP. Please try again.");
+    } finally {
+      setZipping(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -151,6 +204,10 @@ function BureaucracyPage() {
           <p className="text-sm text-muted-foreground">Keep your important documents and deadlines together here.</p>
         </div>
         <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={downloadAll} disabled={zipping || files.length === 0}>
+          <Download className="mr-2 h-4 w-4" />
+          {zipping ? "Preparing ZIP..." : "Download all files"}
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> New item</Button></DialogTrigger>
           <DialogContent>
