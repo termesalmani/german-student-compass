@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, HeartPulse, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { AlertTriangle, HeartPulse, Loader2, Plus, Sparkles, Trash2, ChefHat, Clock, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 
@@ -46,13 +46,16 @@ function HealthPage() {
     notes: "",
   });
 
-  // meal planner state
+  // meal helper state
   const [budget, setBudget] = useState(30);
   const [diet, setDiet] = useState("no preference");
-  const [cookingTime, setCookingTime] = useState(30);
+  const [cookingTime, setCookingTime] = useState(20);
   const [dislikes, setDislikes] = useState("");
+  const [energy, setEnergy] = useState<"exhausted" | "normal" | "can_cook">("normal");
+  const [pantry, setPantry] = useState<string[]>(["rice", "pasta", "eggs"]);
   const [mealLoading, setMealLoading] = useState(false);
-  const [mealIdeas, setMealIdeas] = useState("");
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [microcopyIdx] = useState(() => Math.floor(Math.random() * MICROCOPY.length));
 
   const load = async () => {
     const { data } = await supabase
@@ -99,14 +102,15 @@ function HealthPage() {
 
   const generateMeals = async () => {
     setMealLoading(true);
-    setMealIdeas("");
+    setMeals([]);
     try {
       const { data, error } = await supabase.functions.invoke("generate-meal-ideas", {
-        body: { budget, diet, cookingTime, dislikes },
+        body: { budget, diet, cookingTime, dislikes, energy, pantry },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setMealIdeas(data?.ideas ?? "");
+      setMeals(Array.isArray(data?.meals) ? data.meals : []);
+      if (!data?.meals?.length) toast.error("Couldn't generate meals. Try again.");
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to generate meals");
     } finally {
@@ -243,14 +247,18 @@ function HealthPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Low-budget meal planner</CardTitle>
-          <CardDescription>Simple, affordable meal ideas tailored to your week.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><ChefHat className="h-5 w-5 text-primary" /> Student kitchen helper</CardTitle>
+          <CardDescription>{MICROCOPY[microcopyIdx]}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Weekly food budget (€)</Label>
               <Input type="number" min={5} value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Cooking time per meal (minutes)</Label>
+              <Input type="number" min={5} value={cookingTime} onChange={(e) => setCookingTime(Number(e.target.value))} />
             </div>
             <div className="space-y-2">
               <Label>Dietary preference</Label>
@@ -264,24 +272,116 @@ function HealthPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Cooking time (minutes per meal)</Label>
-              <Input type="number" min={5} value={cookingTime} onChange={(e) => setCookingTime(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
               <Label>Disliked ingredients</Label>
               <Input value={dislikes} onChange={(e) => setDislikes(e.target.value)} placeholder="e.g. mushrooms, olives" />
             </div>
           </div>
-          <Button onClick={generateMeals} disabled={mealLoading}>
-            {mealLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="mr-2 h-4 w-4" /> Generate meal ideas</>}
+
+          <div className="space-y-2">
+            <Label>How's your energy today?</Label>
+            <div className="flex flex-wrap gap-2">
+              {ENERGY_OPTIONS.map((o) => (
+                <Button
+                  key={o.value}
+                  type="button"
+                  size="sm"
+                  variant={energy === o.value ? "default" : "outline"}
+                  onClick={() => setEnergy(o.value)}
+                >
+                  {o.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>What you probably already have</Label>
+            <p className="text-xs text-muted-foreground">Tap what's in your kitchen — we'll lean on these.</p>
+            <div className="flex flex-wrap gap-2">
+              {PANTRY_STAPLES.map((item) => {
+                const on = pantry.includes(item);
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() =>
+                      setPantry((p) => (on ? p.filter((x) => x !== item) : [...p, item]))
+                    }
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      on ? "border-primary bg-primary/10 text-foreground" : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <Button onClick={generateMeals} disabled={mealLoading} className="w-full sm:w-auto">
+            {mealLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Thinking up some ideas…</> : <><Sparkles className="mr-2 h-4 w-4" /> Suggest meals</>}
           </Button>
-          {mealIdeas && (
-            <pre className="whitespace-pre-wrap rounded-md bg-muted p-4 font-sans text-sm leading-relaxed">
-              {mealIdeas}
-            </pre>
+
+          {meals.length > 0 && (
+            <div className="grid gap-3 md:grid-cols-2">
+              {meals.map((m, i) => (
+                <div key={i} className="rounded-lg border bg-muted/20 p-4 space-y-2">
+                  <div className="text-sm font-semibold">{m.title}</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {typeof m.time_minutes === "number" && (
+                      <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />{m.time_minutes} min</Badge>
+                    )}
+                    {m.effort && <Badge variant="outline">{m.effort}</Badge>}
+                    {m.budget_note && (
+                      <Badge variant="outline" className="gap-1"><Wallet className="h-3 w-3" />{m.budget_note}</Badge>
+                    )}
+                  </div>
+                  {m.blurb && <p className="text-xs text-muted-foreground leading-relaxed">{m.blurb}</p>}
+                  {Array.isArray(m.ingredients) && m.ingredients.length > 0 && (
+                    <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                      {m.ingredients.map((ing, j) => <li key={j}>{ing}</li>)}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!mealLoading && meals.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">
+              One less thing to mentally carry. Tap "Suggest meals" when you're ready.
+            </p>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+type Meal = {
+  title: string;
+  time_minutes?: number;
+  effort?: string;
+  budget_note?: string;
+  ingredients?: string[];
+  blurb?: string;
+};
+
+const ENERGY_OPTIONS: { value: "exhausted" | "normal" | "can_cook"; label: string }[] = [
+  { value: "exhausted", label: "I'm exhausted 😭" },
+  { value: "normal", label: "Normal energy" },
+  { value: "can_cook", label: "I can cook today" },
+];
+
+const PANTRY_STAPLES = [
+  "rice", "pasta", "eggs", "onions", "canned tomatoes",
+  "yogurt", "bread", "lentils", "potatoes", "oats", "tuna", "frozen veg",
+];
+
+const MICROCOPY = [
+  "Simple food ideas for busy student life.",
+  "Affordable meals when your brain is already overloaded.",
+  "Low-effort food ideas for stressful days.",
+  "You don't have to figure out every meal alone.",
+  "Meals that are easy on your time and budget.",
+];
