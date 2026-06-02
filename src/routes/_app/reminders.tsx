@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { useReminderNotifier } from "@/lib/notifications";
 import { pickReminderMicrocopy } from "@/lib/reminder-microcopy";
-import { useMemo } from "react";
 
 export const Route = createFileRoute("/_app/reminders")({ component: RemindersPage });
 
