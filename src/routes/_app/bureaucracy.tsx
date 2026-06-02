@@ -201,7 +201,9 @@ function BureaucracyPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Bureaucracy tracker</h1>
-          <p className="text-sm text-muted-foreground">Keep your important documents and deadlines together here.</p>
+          <p className="text-sm text-muted-foreground">
+            Track deadlines at your own pace. Attaching files is optional — only if it helps you stay organized.
+          </p>
         </div>
         <div className="flex items-center gap-2">
         <Button variant="outline" onClick={downloadAll} disabled={zipping || files.length === 0}>
@@ -493,8 +495,11 @@ function ItemCard({
           disabled={uploading}
           onClick={() => fileInput.current?.click()}
         >
-          <Upload className="mr-1 h-3 w-3" /> {uploading ? "Uploading..." : "Upload PDF / JPG / PNG"}
+          <Upload className="mr-1 h-3 w-3" /> {uploading ? "Uploading..." : "Attach a file (optional)"}
         </Button>
+        <p className="px-0.5 pt-0.5 text-[10px] leading-snug text-muted-foreground/80">
+          Optional · for the things worth keeping nearby. Files stay private to your account.
+        </p>
       </div>
     </div>
   );
