@@ -223,7 +223,7 @@ function HealthPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {reminders.length === 0 && (
-            <p className="text-sm text-muted-foreground">Nothing scheduled. A small reminder now can save future stress.</p>
+            <p className="text-sm text-muted-foreground">Nothing scheduled. {reminderEmptyCopy}</p>
           )}
           {reminders.map((r) => (
             <div key={r.id} className="flex items-start justify-between gap-3 rounded-md border p-3">
