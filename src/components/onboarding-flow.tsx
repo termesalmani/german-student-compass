@@ -163,7 +163,7 @@ export function OnboardingFlow() {
           <div className="space-y-5">
             <div className="space-y-1">
               <h2 className="text-lg font-semibold tracking-tight">Add one important reminder</h2>
-              <p className="text-sm text-muted-foreground">Your future self will thank you for this one.</p>
+              <p className="text-sm text-muted-foreground">{reminderTagline}</p>
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {SUGGESTED_REMINDERS.map((s) => {
