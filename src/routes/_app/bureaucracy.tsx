@@ -493,7 +493,7 @@ function ItemCard({
           disabled={uploading}
           onClick={() => fileInput.current?.click()}
         >
-          <Upload className="mr-1 h-3 w-3" /> {uploading ? "Uploading..." : "Upload PDF / JPG / PNG"}
+          <Upload className="mr-1 h-3 w-3" /> {uploading ? "Uploading..." : "Attach a file (optional)"}
         </Button>
         <p className="px-0.5 pt-0.5 text-[10px] leading-snug text-muted-foreground/80">
           Optional · for the things worth keeping nearby. Files stay private to your account.
