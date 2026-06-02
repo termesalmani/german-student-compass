@@ -14,6 +14,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { useReminderNotifier } from "@/lib/notifications";
+import { pickReminderMicrocopy } from "@/lib/reminder-microcopy";
+import { useMemo } from "react";
 
 export const Route = createFileRoute("/_app/reminders")({ component: RemindersPage });
 
@@ -29,11 +31,12 @@ type Reminder = {
 };
 
 function RemindersPage() {
+  const tagline = useMemo(() => pickReminderMicrocopy(), []);
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Reminders</h1>
-        <p className="text-sm text-muted-foreground">Visa, deadlines, health checkups, jobs and custom events.</p>
+        <p className="text-sm text-muted-foreground">{tagline}</p>
       </div>
       <RemindersManager />
     </div>
@@ -43,6 +46,7 @@ function RemindersPage() {
 export function RemindersManager() {
   const [items, setItems] = useState<Reminder[]>([]);
   const [open, setOpen] = useState(false);
+  const emptyCopy = useMemo(() => pickReminderMicrocopy(), []);
 
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
@@ -172,7 +176,7 @@ export function RemindersManager() {
         </CardHeader>
         <CardContent className="space-y-2">
           {items.length === 0 && (
-            <p className="text-sm text-muted-foreground">Your future self will thank you for this one. Add a small reminder to begin.</p>
+            <p className="text-sm text-muted-foreground">{emptyCopy} Add one when you're ready.</p>
           )}
           {items.map((r) => (
             <div key={r.id} className={`flex items-start justify-between gap-3 rounded-md border p-3 ${r.completed ? "opacity-60" : ""}`}>
