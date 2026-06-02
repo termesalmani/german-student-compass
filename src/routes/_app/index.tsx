@@ -35,6 +35,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useReminderNotifier } from "@/lib/notifications";
+import { pickReminderMicrocopy } from "@/lib/reminder-microcopy";
 import { useAuth } from "@/lib/auth";
 import { RemindersManager } from "./reminders";
 import { OnboardingFlow } from "@/components/onboarding-flow";
