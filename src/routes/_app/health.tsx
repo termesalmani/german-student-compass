@@ -37,6 +37,7 @@ const SUGGESTED: { title: string; category: string; frequency: string }[] = [
 
 function HealthPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const reminderEmptyCopy = useMemo(() => pickReminderMicrocopy(), []);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     title: "",
