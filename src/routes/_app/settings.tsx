@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, Bell, User, Palette, Mail, Lock } from "lucide-react";
+import { Check, Bell, User, Palette, Mail, Lock, FolderLock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { getNotifPref, setNotifPref, getPermission, requestPermission, type NotifPermission } from "@/lib/notifications";
+import { FilesManager } from "@/components/files-manager";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 
