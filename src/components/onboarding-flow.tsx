@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { pickReminderMicrocopy } from "@/lib/reminder-microcopy";
 
 const OVERWHELM_OPTIONS: { key: string; label: string }[] = [
   { key: "visa", label: "Visa & bureaucracy" },
@@ -37,6 +38,7 @@ export function OnboardingFlow() {
   const [customTitle, setCustomTitle] = useState("");
   const [reminderDate, setReminderDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const reminderTagline = useMemo(() => pickReminderMicrocopy(), []);
 
   useEffect(() => {
     if (!user) return;
@@ -161,7 +163,7 @@ export function OnboardingFlow() {
           <div className="space-y-5">
             <div className="space-y-1">
               <h2 className="text-lg font-semibold tracking-tight">Add one important reminder</h2>
-              <p className="text-sm text-muted-foreground">Your future self will thank you for this one.</p>
+              <p className="text-sm text-muted-foreground">{reminderTagline}</p>
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {SUGGESTED_REMINDERS.map((s) => {

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { pickReminderMicrocopy } from "@/lib/reminder-microcopy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ const SUGGESTED: { title: string; category: string; frequency: string }[] = [
 
 function HealthPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const reminderEmptyCopy = useMemo(() => pickReminderMicrocopy(), []);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -221,7 +223,7 @@ function HealthPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {reminders.length === 0 && (
-            <p className="text-sm text-muted-foreground">Nothing scheduled. A small reminder now can save future stress.</p>
+            <p className="text-sm text-muted-foreground">Nothing scheduled. {reminderEmptyCopy}</p>
           )}
           {reminders.map((r) => (
             <div key={r.id} className="flex items-start justify-between gap-3 rounded-md border p-3">

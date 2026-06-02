@@ -35,6 +35,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useReminderNotifier } from "@/lib/notifications";
+import { pickReminderMicrocopy } from "@/lib/reminder-microcopy";
 import { useAuth } from "@/lib/auth";
 import { RemindersManager } from "./reminders";
 import { OnboardingFlow } from "@/components/onboarding-flow";
@@ -80,6 +81,7 @@ function Dashboard() {
   const [open, setOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const reminderEmptyCopy = useMemo(() => pickReminderMicrocopy(), []);
 
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -410,7 +412,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-2">
               {reminders.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nothing on the horizon. A small reminder now can save future stress.</p>
+                <p className="text-sm text-muted-foreground">Nothing on the horizon. {reminderEmptyCopy}</p>
               )}
               {reminders.slice(0, 5).map((r) => (
                 <div key={r.id} className="flex items-start justify-between rounded-md border p-3">
