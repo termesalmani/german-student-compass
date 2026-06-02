@@ -201,7 +201,9 @@ function BureaucracyPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Bureaucracy tracker</h1>
-          <p className="text-sm text-muted-foreground">Keep your important documents and deadlines together here.</p>
+          <p className="text-sm text-muted-foreground">
+            Track deadlines at your own pace. Attaching files is optional — only if it helps you stay organized.
+          </p>
         </div>
         <div className="flex items-center gap-2">
         <Button variant="outline" onClick={downloadAll} disabled={zipping || files.length === 0}>
