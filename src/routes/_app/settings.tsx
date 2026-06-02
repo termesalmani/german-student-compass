@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, Bell, User, Palette, Mail, Lock } from "lucide-react";
+import { Check, Bell, User, Palette, Mail, Lock, FolderLock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { getNotifPref, setNotifPref, getPermission, requestPermission, type NotifPermission } from "@/lib/notifications";
+import { FilesManager } from "@/components/files-manager";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 
@@ -253,6 +254,24 @@ function SettingsPage() {
               );
             })}
           </div>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-1 pt-2">
+        <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <FolderLock className="h-3.5 w-3.5" /> Files & privacy
+        </h2>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><FolderLock className="h-4 w-4" /> Uploaded files</CardTitle>
+          <CardDescription>
+            A calm place to review and remove documents you've uploaded. Uploading is optional — only keep what helps you stay organized.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FilesManager />
         </CardContent>
       </Card>
     </div>
