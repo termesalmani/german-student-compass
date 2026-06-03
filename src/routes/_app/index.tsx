@@ -41,7 +41,7 @@ import { RemindersManager } from "./reminders";
 import { OnboardingFlow } from "@/components/onboarding-flow";
 import { Link } from "@tanstack/react-router";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, LayoutDashboard, FileText as FileTextIcon, Briefcase as BriefcaseIcon, Mail, HeartPulse, Settings as SettingsIcon, Check } from "lucide-react";
+import { ArrowRight, LayoutDashboard, FileText as FileTextIcon, Briefcase as BriefcaseIcon, Mail, HeartPulse, Settings as SettingsIcon } from "lucide-react";
 import { SectionIntro } from "@/components/section-intro";
 import { EXPLORATION_KEYS, SECTION_INTROS, useVisitedSections, type SectionKey } from "@/lib/section-intros";
 
