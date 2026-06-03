@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { useReminderNotifier } from "@/lib/notifications";
 import JSZip from "jszip";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/bureaucracy")({ component: BureaucracyPage });
 
