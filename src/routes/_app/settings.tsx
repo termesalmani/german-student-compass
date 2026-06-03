@@ -12,6 +12,7 @@ import { Check, Bell, User, Palette, Mail, Lock, FolderLock } from "lucide-react
 import { Switch } from "@/components/ui/switch";
 import { getNotifPref, setNotifPref, getPermission, requestPermission, type NotifPermission } from "@/lib/notifications";
 import { FilesManager } from "@/components/files-manager";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 
@@ -108,6 +109,7 @@ function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <SectionIntro section="settings" />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">Personalize your German Student Compass.</p>
