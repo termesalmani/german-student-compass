@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Bot, Loader2, Send, User } from "lucide-react";
 import { toast } from "sonner";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/assistant")({ component: AssistantPage });
 
@@ -53,6 +54,7 @@ function AssistantPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col space-y-4">
+      <SectionIntro section="assistant" />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">AI Assistant</h1>
         <p className="text-sm text-muted-foreground">
