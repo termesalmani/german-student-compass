@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { useReminderNotifier } from "@/lib/notifications";
 import JSZip from "jszip";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/bureaucracy")({ component: BureaucracyPage });
 
@@ -198,6 +199,7 @@ function BureaucracyPage() {
 
   return (
     <div className="space-y-6">
+      <SectionIntro section="bureaucracy" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Bureaucracy tracker</h1>

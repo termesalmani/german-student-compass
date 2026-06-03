@@ -41,7 +41,9 @@ import { RemindersManager } from "./reminders";
 import { OnboardingFlow } from "@/components/onboarding-flow";
 import { Link } from "@tanstack/react-router";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Bell, FilePlus2, Mail, Briefcase as BriefcaseIcon, HeartPulse } from "lucide-react";
+import { ArrowRight, LayoutDashboard, FileText as FileTextIcon, Briefcase as BriefcaseIcon, Mail, HeartPulse, Settings as SettingsIcon } from "lucide-react";
+import { SectionIntro } from "@/components/section-intro";
+import { EXPLORATION_KEYS, SECTION_INTROS, useVisitedSections, type SectionKey } from "@/lib/section-intros";
 
 export const Route = createFileRoute("/_app/")({ component: Dashboard });
 
@@ -73,15 +75,11 @@ function Dashboard() {
   const [bureaucracyCount, setBureaucracyCount] = useState(0);
   const [jobsByStatus, setJobsByStatus] = useState<Record<string, number>>({});
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [hasFile, setHasFile] = useState(false);
-  const [hasJob, setHasJob] = useState(false);
-  const [hasBureauItem, setHasBureauItem] = useState(false);
-  const [hasReminder, setHasReminder] = useState(false);
-  const [hasHealthReminder, setHasHealthReminder] = useState(false);
   const [open, setOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const reminderEmptyCopy = useMemo(() => pickReminderMicrocopy(), []);
+  const visitedSections = useVisitedSections();
 
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -89,24 +87,16 @@ function Dashboard() {
   const [category, setCategory] = useState("general");
 
   const load = async () => {
-    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }, { data: bureauRem }, { data: healthRem }, { count: fileCount }, { count: anyRemCount }, { count: anyHealthCount }] = await Promise.all([
+    const [{ data: t }, { count: bCount }, { data: jobs }, { data: rem }, { data: bureauRem }, { data: healthRem }] = await Promise.all([
       supabase.from("tasks").select("*").order("sort_order", { ascending: true }).order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("bureaucracy_items").select("*", { count: "exact", head: true }),
       supabase.from("job_applications").select("status"),
       supabase.from("reminders").select("*").eq("completed", false).order("reminder_at", { ascending: true, nullsFirst: false }),
       supabase.from("bureaucracy_items").select("id,title,reminder_at,due_date,completed,category").eq("completed", false).not("reminder_at", "is", null).order("reminder_at", { ascending: true }),
       supabase.from("health_reminders").select("id,title,due_date,category,completed").eq("completed", false).not("due_date", "is", null).order("due_date", { ascending: true }),
-      supabase.from("bureaucracy_files").select("*", { count: "exact", head: true }),
-      supabase.from("reminders").select("*", { count: "exact", head: true }),
-      supabase.from("health_reminders").select("*", { count: "exact", head: true }),
     ]);
     setTasks((t as Task[]) ?? []);
     setBureaucracyCount(bCount ?? 0);
-    setHasFile((fileCount ?? 0) > 0);
-    setHasBureauItem((bCount ?? 0) > 0);
-    setHasReminder((anyRemCount ?? 0) > 0);
-    setHasHealthReminder((anyHealthCount ?? 0) > 0);
-    setHasJob((jobs ?? []).length > 0);
     const counts: Record<string, number> = {};
     (jobs ?? []).forEach((j: any) => (counts[j.status] = (counts[j.status] ?? 0) + 1));
     setJobsByStatus(counts);
@@ -156,17 +146,27 @@ function Dashboard() {
 
   useReminderNotifier(reminders);
 
-  const setupSteps = useMemo(() => [
-    { key: "reminder", done: hasReminder, label: "Add your first reminder", to: "/" as const, icon: <Bell className="h-4 w-4" />, action: () => setManageOpen(true) },
-    { key: "bureau", done: hasBureauItem, label: "Add a bureaucracy item", to: "/bureaucracy" as const, icon: <FilePlus2 className="h-4 w-4" /> },
-    { key: "file", done: hasFile, label: "Upload your first document", to: "/bureaucracy" as const, icon: <FilePlus2 className="h-4 w-4" /> },
-    { key: "job", done: hasJob, label: "Track a job application", to: "/jobs" as const, icon: <BriefcaseIcon className="h-4 w-4" /> },
-    { key: "health", done: hasHealthReminder, label: "Add a health reminder", to: "/health" as const, icon: <HeartPulse className="h-4 w-4" /> },
-  ], [hasReminder, hasBureauItem, hasFile, hasJob, hasHealthReminder]);
-  const completedSetup = setupSteps.filter((s) => s.done).length;
-  const totalSetup = setupSteps.length;
+  const SECTION_META: Record<SectionKey, { to: string; icon: React.ReactNode }> = {
+    dashboard: { to: "/", icon: <LayoutDashboard className="h-4 w-4" /> },
+    bureaucracy: { to: "/bureaucracy", icon: <FileTextIcon className="h-4 w-4" /> },
+    jobs: { to: "/jobs", icon: <BriefcaseIcon className="h-4 w-4" /> },
+    "email-helper": { to: "/email-helper", icon: <Mail className="h-4 w-4" /> },
+    assistant: { to: "/assistant", icon: <LayoutDashboard className="h-4 w-4" /> },
+    health: { to: "/health", icon: <HeartPulse className="h-4 w-4" /> },
+    settings: { to: "/settings", icon: <SettingsIcon className="h-4 w-4" /> },
+  };
+
+  const exploreSteps = EXPLORATION_KEYS.map((key) => ({
+    key,
+    done: visitedSections.includes(key),
+    label: `Explore ${SECTION_INTROS[key].title}`,
+    to: SECTION_META[key].to,
+    icon: SECTION_META[key].icon,
+  }));
+  const completedSetup = exploreSteps.filter((s) => s.done).length;
+  const totalSetup = exploreSteps.length;
   const setupPct = Math.round((completedSetup / totalSetup) * 100);
-  const remainingSteps = setupSteps.filter((s) => !s.done);
+  const remainingSteps = exploreSteps.filter((s) => !s.done);
 
   const addTask = async () => {
     if (!title.trim()) return;
@@ -242,6 +242,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <SectionIntro section="dashboard" />
       <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 via-background to-background p-6">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-3">
@@ -310,13 +311,15 @@ function Dashboard() {
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <CardTitle>Start here</CardTitle>
-                <CardDescription>Focus on what matters most first.</CardDescription>
+                <CardTitle>Let me show you around</CardTitle>
+                <CardDescription>
+                  Take a look at each section whenever you're curious — no pressure to fill anything in.
+                </CardDescription>
               </div>
               <div className="min-w-[180px]">
-                <div className="text-xs text-muted-foreground">Setup progress: {completedSetup}/{totalSetup} completed</div>
+                <div className="text-xs text-muted-foreground">Explored {completedSetup} of {totalSetup} sections</div>
                 <Progress value={setupPct} className="mt-1 h-1.5" />
-                <div className="mt-1 text-xs text-muted-foreground/80">You're building a calmer system for yourself.</div>
+                <div className="mt-1 text-xs text-muted-foreground/80">Exploring counts. Filling things in is optional.</div>
               </div>
             </div>
           </CardHeader>
@@ -333,13 +336,6 @@ function Dashboard() {
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </div>
               );
-              if (s.action) {
-                return (
-                  <button key={s.key} type="button" onClick={s.action} className="text-left">
-                    {inner}
-                  </button>
-                );
-              }
               return (
                 <Link key={s.key} to={s.to}>{inner}</Link>
               );

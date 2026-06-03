@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Sparkles, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/email-helper")({ component: EmailHelper });
 
@@ -47,6 +48,7 @@ function EmailHelper() {
 
   return (
     <div className="space-y-6">
+      <SectionIntro section="email-helper" />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">German email helper</h1>
         <p className="text-sm text-muted-foreground">

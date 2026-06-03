@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/jobs")({ component: JobsPage });
 
@@ -109,6 +110,7 @@ function JobsPage() {
 
   return (
     <div className="space-y-6">
+      <SectionIntro section="jobs" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Job applications</h1>

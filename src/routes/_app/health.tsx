@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, HeartPulse, Loader2, Plus, Sparkles, Trash2, ChefHat, Clock, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
+import { SectionIntro } from "@/components/section-intro";
 
 export const Route = createFileRoute("/_app/health")({ component: HealthPage });
 
@@ -124,6 +125,7 @@ function HealthPage() {
 
   return (
     <div className="space-y-6">
+      <SectionIntro section="health" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
