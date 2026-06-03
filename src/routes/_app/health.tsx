@@ -30,11 +30,12 @@ type Reminder = {
 };
 
 const SUGGESTED: { title: string; category: string; frequency: string }[] = [
-  { title: "Yearly blood test", category: "checkup", frequency: "yearly" },
-  { title: "Dental checkup", category: "dental", frequency: "every 6 months" },
-  { title: "Gynecological checkup", category: "gynecology", frequency: "yearly" },
-  { title: "Eye checkup", category: "vision", frequency: "every 2 years" },
-  { title: "Vaccination record review", category: "vaccination", frequency: "yearly" },
+  { title: "Drink some water", category: "self-care", frequency: "" },
+  { title: "Take a short break", category: "self-care", frequency: "" },
+  { title: "Stretch after studying", category: "self-care", frequency: "" },
+  { title: "Sleep earlier tonight", category: "self-care", frequency: "" },
+  { title: "Take your medication", category: "medication", frequency: "" },
+  { title: "Doctor appointment", category: "appointment", frequency: "one-time" },
 ];
 
 function HealthPage() {
@@ -129,39 +130,37 @@ function HealthPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <HeartPulse className="h-6 w-6 text-primary" /> Student Health
+            <HeartPulse className="h-6 w-6 text-primary" /> Take care of yourself
           </h1>
           <p className="text-sm text-muted-foreground">
-            General wellness organization for your time in Germany.
+            A gentle space for the small things — appointments, medication, water, rest. Add only what feels useful.
           </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" /> Custom reminder</Button>
+            <Button><Plus className="mr-2 h-4 w-4" /> New reminder</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Add health reminder</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Add a reminder</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div className="space-y-2">
                 <Label>Title</Label>
-                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Dermatologist checkup" />
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Take medication, doctor appointment, drink water" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Date</Label>
+                  <Label>Date <span className="text-muted-foreground">(optional)</span></Label>
                   <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Frequency</Label>
-                  <Select value={form.frequency || "yearly"} onValueChange={(v) => setForm({ ...form, frequency: v })}>
+                  <Label>Repeat <span className="text-muted-foreground">(optional)</span></Label>
+                  <Select value={form.frequency || "one-time"} onValueChange={(v) => setForm({ ...form, frequency: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="one-time">One-time</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
                       <SelectItem value="monthly">Every month</SelectItem>
-                      <SelectItem value="every 3 months">Every 3 months</SelectItem>
-                      <SelectItem value="every 6 months">Every 6 months</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
-                      <SelectItem value="every 2 years">Every 2 years</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -171,14 +170,14 @@ function HealthPage() {
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["general", "checkup", "dental", "vision", "gynecology", "vaccination", "mental"].map((c) => (
+                    {["general", "self-care", "appointment", "medication", "wellbeing"].map((c) => (
                       <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Notes</Label>
+                <Label>Notes <span className="text-muted-foreground">(optional)</span></Label>
                 <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
             </div>
@@ -189,16 +188,16 @@ function HealthPage() {
 
       <Alert>
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Not medical advice</AlertTitle>
+        <AlertTitle>A gentle note</AlertTitle>
         <AlertDescription>
-          This app does not provide medical diagnosis or treatment advice. For medical concerns, consult a doctor.
+          These reminders are just supportive nudges — not medical advice. For anything that worries you, talk to a doctor.
         </AlertDescription>
       </Alert>
 
       <Card>
         <CardHeader>
-          <CardTitle>Suggested checkups</CardTitle>
-          <CardDescription>Common reminders for students. Add the ones you need.</CardDescription>
+          <CardTitle>Gentle ideas</CardTitle>
+          <CardDescription>Small things that often help. Add only what feels useful — skip the rest.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {SUGGESTED.map((s) => {
@@ -207,7 +206,7 @@ function HealthPage() {
               <div key={s.title} className="flex items-center justify-between rounded-md border p-3">
                 <div>
                   <div className="text-sm font-medium">{s.title}</div>
-                  <div className="text-xs text-muted-foreground">{s.frequency}</div>
+                  <div className="text-xs text-muted-foreground">{s.frequency || s.category}</div>
                 </div>
                 <Button size="sm" variant={added ? "secondary" : "outline"} disabled={added} onClick={() => addReminder(s)}>
                   {added ? "Added" : "Add"}
@@ -221,7 +220,7 @@ function HealthPage() {
       <Card>
         <CardHeader>
           <CardTitle>Your reminders</CardTitle>
-          <CardDescription>Track upcoming and recurring checkups.</CardDescription>
+          <CardDescription>Whatever you'd like to keep nearby — appointments, medication, self-care.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {reminders.length === 0 && (
