@@ -30,11 +30,12 @@ type Reminder = {
 };
 
 const SUGGESTED: { title: string; category: string; frequency: string }[] = [
-  { title: "Yearly blood test", category: "checkup", frequency: "yearly" },
-  { title: "Dental checkup", category: "dental", frequency: "every 6 months" },
-  { title: "Gynecological checkup", category: "gynecology", frequency: "yearly" },
-  { title: "Eye checkup", category: "vision", frequency: "every 2 years" },
-  { title: "Vaccination record review", category: "vaccination", frequency: "yearly" },
+  { title: "Drink some water", category: "self-care", frequency: "" },
+  { title: "Take a short break", category: "self-care", frequency: "" },
+  { title: "Stretch after studying", category: "self-care", frequency: "" },
+  { title: "Sleep earlier tonight", category: "self-care", frequency: "" },
+  { title: "Take your medication", category: "medication", frequency: "" },
+  { title: "Doctor appointment", category: "appointment", frequency: "one-time" },
 ];
 
 function HealthPage() {
